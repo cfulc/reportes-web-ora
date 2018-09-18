@@ -1,6 +1,6 @@
 create or replace FUNCTION                                                                                                                                                                                                                                                                                                                               DOCUMENTOS_CARGOS_ABONOS (
     EMPRESA_ID NUMBER,
-    FECHA DATE,
+    FECHA_REP DATE,
     LOCAL_EXT NUMBER /* PROVEEDORES  0 - TODOS  1 - LOCALES  2 - EXTRANJEROS */,
     TIPO_MONEDA NUMBER /* TIPO DE MONEDA  0 - LOCAL  1 - EXTRANJERA */,
     TIPO_FECHA NUMBER /* TIPO DE FECHA  0 - DOCUMENTO  1 - OPERACION  2 - JORNALIZACION */,
@@ -32,7 +32,7 @@ BEGIN
             FROM CONTADB.CON_ENC_POLIZAS
             WHERE
                 EMP_ID = EMPRESA_ID
-                AND ENPO_FECHA <= FECHA
+                AND ENPO_FECHA <= FECHA_REP
         ),
         PROVEEDORES AS (
             SELECT
@@ -94,7 +94,7 @@ BEGIN
                 C.EMP_ID = EMPRESA_ID
                 AND ((INSTR(LISTA_TIPO_DOCTOS, ',' || C.TPDC_ID || ',') = INCLUYE_TIPO_DOCTOS) OR (LISTA_TIPO_DOCTOS IS NULL))
                 AND ((INSTR(LISTA_PROVEEDORES, ',' || PRO.ID || ',') = INCLUYE_PROVEEDORES) OR (LISTA_PROVEEDORES IS NULL))
-                AND ((TIPO_FECHA = 0 AND C.CGPR_FECHA = FECHA) OR (TIPO_FECHA = 1 AND TRUNC(C.BIT_CREADO) = FECHA) OR (TIPO_FECHA = 2 AND P.FECHA = FECHA))
+                AND ((TIPO_FECHA = 0 AND C.CGPR_FECHA <= FECHA_REP) OR (TIPO_FECHA = 1 AND TRUNC(C.BIT_CREADO) <= FECHA_REP) OR (TIPO_FECHA = 2 AND P.FECHA <= FECHA_REP))
         ),
         ABONOS AS (
             SELECT 
@@ -123,7 +123,7 @@ BEGIN
                 A.EMP_ID = EMPRESA_ID
                 AND ((INSTR(LISTA_TIPO_DOCTOS, ',' || A.TPDC_ID || ',') = INCLUYE_TIPO_DOCTOS) OR (LISTA_TIPO_DOCTOS IS NULL))
                 AND ((INSTR(LISTA_PROVEEDORES, ',' || PRO.ID || ',') = INCLUYE_PROVEEDORES) OR (LISTA_PROVEEDORES IS NULL))
-                AND ((TIPO_FECHA = 0 AND A.ENAB_FECHA = FECHA) OR (TIPO_FECHA = 1 AND TRUNC(A.ENAB_FECHA_CREA) = FECHA) OR (TIPO_FECHA = 2 AND P.FECHA = FECHA))
+                AND ((TIPO_FECHA = 0 AND A.ENAB_FECHA <= FECHA_REP) OR (TIPO_FECHA = 1 AND TRUNC(A.ENAB_FECHA_CREA) <= FECHA_REP) OR (TIPO_FECHA = 2 AND P.FECHA <= FECHA_REP))
                 AND A.ENAB_APLICADO = 1
                 AND A.ENAB_ANULADO = 0
         ),
